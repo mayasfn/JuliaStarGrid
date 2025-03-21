@@ -5,6 +5,7 @@ function gridSolver(lignes::Array{Int64},colonnes::Array{Int64})
     n = size(lignes,1)
 
     model = Model(HiGHS.Optimizer)
+    #model = Model(Cbc.Optimizer)
 
     @variable(model,x[1:n,1:n],Bin)
 
