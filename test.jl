@@ -30,6 +30,18 @@ function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
     @constraint(model, [i in 2:n, j in 1:n], down[i-1,j] <= up[i,j])
     @constraint(model, [i in 1:n, j in 1:(n-1)], right[i,j] <= left[i,j+1])
     @constraint(model, [i in 1:n, j in 1:(n-1)], left[i,j+1] <= right[i,j])
+    
+    # No LEFT on the first column
+    @constraint(model, [i in 1:n], left[i,1] == 0)
+
+    # No RIGHT on the last column
+    @constraint(model, [i in 1:n], right[i,n] == 0)
+
+    # No UP on the first row
+    @constraint(model, [j in 1:n], up[1,j] == 0)
+
+    # No DOWN on the last row
+    @constraint(model, [j in 1:n], down[n,j] == 0)
 
     # 4) Imposer une direction à chaque case
     @constraint(model, [i in 1:n, j in 1:n], up[i,j] + down[i,j] + left[i,j] + right[i,j] >= x[i,j])
@@ -52,7 +64,8 @@ function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
     left_sol = round.(Int, value.(left))
     right_sol = round.(Int, value.(right))
     # print(up_sol,down_sol,left_sol,right_sol)
-    displayGrid(x_sol, up_sol, down_sol, left_sol, right_sol)
+    # displayGrid(x_sol, up_sol, down_sol, left_sol, right_sol)
+    print_ascii_blocks_with_borders(x_sol, up_sol, down_sol, left_sol, right_sol)
     return 0
 end
 
@@ -70,33 +83,33 @@ function displayGrid(x_sol::Array{Int,2}, up_sol, down_sol, left_sol, right_sol)
         return "+" * join(fill("---", n), "+") * "+"
     end
     sep = separator_line(n)
-    
+
     println(sep)
     for i in 1:n
         row_str = "|"
         for j in 1:n
-            if x_sol[i,j] == 1
+            if x_sol[i, j] == 1
                 # Choisit la flèche correspondant à la direction active.
                 # (Dans cet exemple, on affiche la première trouvée.
                 # Si plusieurs directions sont actives dans la même case, il faudra adapter.)
-                if up_sol[i,j] == 1 && down_sol[i,j] == 1
+                if up_sol[i, j] == 1 && down_sol[i, j] == 1
                     cell = " ↑↓ "
-                elseif up_sol[i,j] == 1 && right_sol[i,j] == 1
+                elseif up_sol[i, j] == 1 && right_sol[i, j] == 1
                     cell = " ↑→ "
-                elseif up_sol[i,j] == 1 && left_sol[i,j] == 1
+                elseif up_sol[i, j] == 1 && left_sol[i, j] == 1
                     cell = " ←↑ "
-                elseif down_sol[i,j] == 1 && right_sol[i,j] == 1
+                elseif down_sol[i, j] == 1 && right_sol[i, j] == 1
                     cell = " ↓→ "
-                elseif down_sol[i,j] == 1 && left_sol[i,j] == 1
+                elseif down_sol[i, j] == 1 && left_sol[i, j] == 1
                     cell = " ←↓ "
-                elseif right_sol[i,j] == 1 && left_sol[i,j] == 1
-                    cell = " ←→ "
-                  
+                elseif right_sol[i, j] == 1 && left_sol[i, j] == 1
+                    cell = "←→"
+
                 else
                     cell = " * "  # Par défaut, si aucune direction n'est définie.
                 end
             else
-                cell = "   "
+                cell = "  "
             end
             row_str *= cell * "|"
         end
@@ -105,6 +118,35 @@ function displayGrid(x_sol::Array{Int,2}, up_sol, down_sol, left_sol, right_sol)
     end
 end
 
+function print_ascii_blocks_with_borders(x, up, down, left, right)
+    n = size(x, 1)
+
+    for i in 1:n
+        for row in 1:3  # 3 rows per cell
+            line = ""
+            for j in 1:n
+                if x[i,j] == 0
+                    cell = "   "  # empty 3x3 cell
+                else
+                    if row == 1
+                        cell = up[i,j] == 1 ? " * " : "   "
+                    elseif row == 2
+                        left_char  = left[i,j] == 1 ? "*" : " "
+                        center     = "*"
+                        right_char = right[i,j] == 1 ? "*" : " "
+                        cell = left_char * center * right_char
+                    else
+                        cell = down[i,j] == 1 ? " * " : "   "
+                    end
+                end
+                line *= cell * (j < n ? "|" : "")  # add | unless it's the last column
+            end
+            println(line)
+        end
+        # Optional: horizontal separator line after each full row
+        println(repeat("─", n * 4 - 1))
+    end
+end
 
 function main()
     # Exemple d'utilisation avec des contraintes sur le nombre de cases noires par ligne et par colonne
