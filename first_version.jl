@@ -29,7 +29,9 @@ using JuMP,HiGHS
      for i in 1:n
          for j in 1:n
              print("|")
-             if (x_sol[i,j]==1) print(" * ")
+             if (x_sol[i,j]==1) 
+                print(" * ")
+                
              else print("   ")
              end
          end
