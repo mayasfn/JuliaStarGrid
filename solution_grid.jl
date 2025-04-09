@@ -1,11 +1,11 @@
-#using JuMP, HiGHS
-using JuMP, Cbc
+using JuMP, HiGHS
+# using JuMP, Cbc
 
 function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
     n = length(lignes)
 
     #model = Model(HiGHS.Optimizer)
-    model = Model(Cbc.Optimizer)
+    model = Model(HiGHS.Optimizer)
 
     @variable(model, x[1:n, 1:n], Bin)  # 1 si la case (i,j) est noire
 
@@ -64,7 +64,7 @@ function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
     left_sol = round.(Int, value.(left))
     right_sol = round.(Int, value.(right))
     # print(up_sol,down_sol,left_sol,right_sol)
-    displayGrid(x_sol, up_sol, down_sol, left_sol, right_sol)
+    # displayGrid(x_sol, up_sol, down_sol, left_sol, right_sol)
     println("")
     print_ascii_blocks_with_borders(x_sol, up_sol, down_sol, left_sol, right_sol)
     return 0
@@ -181,7 +181,14 @@ end
 
 function main()
     # Exemple d'utilisation avec des contraintes sur le nombre de cases noires par ligne et par colonne
-    gridSolver([5,3,3,5,2], [5,5,2,2,4])
+    # gridSolver([5,3,3,5,2], [5,5,2,2,4])
+    # gridSolver([4,5,3,3,3],[3,4,3,3,5])
+    # gridSolver([3,5,2,5,3],[3,2,4,5,4])
+    gridSolver([3,4,5,4,2],[4,4,3,3,4]) #SOUS TOUR
+    # gridSolver([3,4,3,2,6,2],[4,4,2,3,2,5])
+    # gridSolver([4,5,5,2,5,5],[4,5,4,5,5,3])
+
+    
 end
 
 main()
