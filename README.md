@@ -1,4 +1,4 @@
-# Grill project
+# Grid project
 
 ## Binôme
 * Camelia Mazouz
