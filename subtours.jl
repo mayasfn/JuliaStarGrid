@@ -1,10 +1,8 @@
-using JuMP, HiGHS
-# using JuMP, Cbc
+#using JuMP, HiGHS
+using JuMP, Cbc
 
-function get_black_nodes(x_sol::Matrix{Int})
+function get_occupied_cells(x_sol::Matrix{Int})
     """
-    get_black_nodes(x_sol)
-
     Retourne un ensemble (Set) de tuples (i,j) pour toutes les cellules occupées (où x_sol[i,j] == 1).
     """
     n = size(x_sol, 1)
@@ -20,15 +18,13 @@ end
 
 function get_neighbors(node::Tuple{Int,Int}, x_sol::Matrix{Int}, up_sol::Matrix{Int}, down_sol::Matrix{Int}, left_sol::Matrix{Int}, right_sol::Matrix{Int})
     """
-    get_neighbors(node, x_sol, up_sol, down_sol, left_sol, right_sol)
-
     Pour une cellule node = (i,j), retourne les voisins connectés via les directions actives.
-    Un voisin est ajouté seulement s'il existe (dans la grille) et s'il est noir dans x_sol.
+    Un voisin est ajouté seulement s'il existe (dans la grille) et s'il est occupé dans x_sol.
     """
     n = size(x_sol, 1)
     (i,j) = node
     neighbors = Set{Tuple{Int,Int}}()
-    # Si up est actif et la cellule au-dessus existe et est noire
+    # Si up est actif et la cellule au-dessus existe et est occupée
     if i > 1 && up_sol[i,j] == 1 && x_sol[i-1,j] == 1
         push!(neighbors, (i-1,j))
     end
@@ -49,8 +45,6 @@ end
 
 function dfs_component(start::Tuple{Int,Int}, x_sol::Matrix{Int}, up_sol::Matrix{Int}, down_sol::Matrix{Int}, left_sol::Matrix{Int}, right_sol::Matrix{Int})
     """
-    dfs_component(start, x_sol, up_sol, down_sol, left_sol, right_sol)
-
     Effectue un DFS à partir de start (un tuple (i,j)) et retourne l'ensemble des nœuds connexes.
     """
     visited = Set{Tuple{Int,Int}}()
@@ -72,18 +66,16 @@ end
 
 function detect_subtour(x_sol::Matrix{Int}, up_sol::Matrix{Int}, down_sol::Matrix{Int}, left_sol::Matrix{Int}, right_sol::Matrix{Int})
     """
-    detect_subtour(x_sol, up_sol, down_sol, left_sol, right_sol)
-
     Retourne (has_subtour, S)
     - has_subtour est vrai si le composant connexe trouvé (via DFS) ne contient pas toutes les cellules occupées.
     - S est le sous-ensemble (ensemble de tuples) correspondant au composant connexe trouvé.
-    Si aucune cellule noire n'existe, S est vide.
+    Si aucune cellule occupée n'existe, S est vide.
     """
-    all_nodes = get_black_nodes(x_sol)
+    all_nodes = get_occupied_cells(x_sol)
     if isempty(all_nodes)
         return (false, Set{Tuple{Int,Int}}())
     end
-    # Démarrer le DFS à partir d'un nœud noir choisi arbitrairement
+    # Démarrer le DFS à partir d'un nœud occupée choisi arbitrairement
     start = first(all_nodes)
     comp = dfs_component(start, x_sol, up_sol, down_sol, left_sol, right_sol)
     has_subtour = (length(comp) < length(all_nodes))
@@ -91,10 +83,8 @@ function detect_subtour(x_sol::Matrix{Int}, up_sol::Matrix{Int}, down_sol::Matri
 end
 
 
-function add_connectivity_cut!(model::Model, S::Set{Tuple{Int,Int}}, up, down, left, right, n::Int)
+function add_connectivity_constraint(model::Model, S::Set{Tuple{Int,Int}}, up, down, left, right, n::Int)
     """
-    add_connectivity_cut!(model, S, up, down, left, right, n)
-
     Ajoute au modèle une contrainte pour éliminer le sous-tour isolé correspondant à S.
     On somme les arcs sortants de S (pour chaque cellule de S, on regarde si une direction active mène vers un voisin NON dans S)
     et on impose que cette somme soit au moins 2.
@@ -202,13 +192,15 @@ end
 
 function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
     n = length(lignes)
-    totalBlack = sum(lignes)  # Nombre total de cases occupées
 
-    model = Model(HiGHS.Optimizer)
+    #model = Model(HiGHS.Optimizer)
+    model = Model(Cbc.Optimizer)
+    set_silent(model)
 
-    # Variables x : 1 si la case (i,j) est noire
+    # Variables x : 1 si la case (i,j) est occupée
     @variable(model, x[1:n, 1:n], Bin)
-    # Variables directionnelles (chaque cellule noire a exactement 2 directions actives)
+
+    # Variables directionnelles (chaque cellule occupée a exactement 2 directions actives)
     @variable(model, up[1:n, 1:n], Bin)
     @variable(model, down[1:n, 1:n], Bin)
     @variable(model, left[1:n, 1:n], Bin)
@@ -223,7 +215,7 @@ function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
         up[i,j] + down[i,j] + left[i,j] + right[i,j] == 2 * x[i,j]
     )
 
-    # Contraintes de cohérence des arcs (les flèches doivent être "réciproques")
+    # Contraintes de cohérence des arcs (les flèches doivent être "réciproques" c.a.d une sortie right doit avoir une entrée left à côté)
     @constraint(model, [i in 2:n, j in 1:n], up[i,j] <= down[i-1,j])
     @constraint(model, [i in 2:n, j in 1:n], down[i-1,j] <= up[i,j])
     @constraint(model, [i in 1:n, j in 1:(n-1)], right[i,j] <= left[i,j+1])
@@ -255,8 +247,8 @@ function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
     has_subtour, comp = detect_subtour(x_sol, up_sol, down_sol, left_sol, right_sol)
     while has_subtour
         println("Sous-tour détecté sur S = ", comp)
-        # Ajouter une coupure pour forcer au moins 2 arcs sortants du composant comp.
-        add_connectivity_cut!(model, comp, up, down, left, right, n)
+        # Ajouter une constrainte pour forcer au moins 2 arcs sortants du composant comp.
+        add_connectivity_constraint(model, comp, up, down, left, right, n)
         optimize!(model)
         x_sol     = round.(Int, value.(x))
         up_sol    = round.(Int, value.(up))
@@ -273,13 +265,18 @@ function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
 end
 
 function main()
-    print("SOLVE-----------------------")
-    # gridSolver([5,3,3,5,2], [5,5,2,2,4])
-    # gridSolver([4,5,3,3,3],[3,4,3,3,5])
-    # gridSolver([3,5,2,5,3],[3,2,4,5,4])
-    # gridSolver([3,4,5,4,2],[4,4,3,3,4]) #SOUS TOUR
-    # gridSolver([3,4,3,2,6,2],[4,4,2,3,2,5])
-    # gridSolver([4,5,5,2,5,5],[4,5,4,5,5,3])
+    print("Jeu exemple: ")
+    gridSolver([5,3,3,5,2], [5,5,2,2,4])
+    println("Jeu 1: ")
+    gridSolver([4,5,3,3,3],[3,4,3,3,5])
+    println("Jeu 2: ")
+    gridSolver([3,5,2,5,3],[3,2,4,5,4])
+    println("Jeu 3: ")
+    gridSolver([3,4,5,4,2],[4,4,3,3,4]) #SOUS TOUR
+    println("Jeu 4: ")
+    gridSolver([3,4,3,2,6,2],[4,4,2,3,2,5])
+    println("Jeu 5: ")
+    gridSolver([4,5,5,2,5,5],[4,5,4,5,5,3])
 
 end
 
