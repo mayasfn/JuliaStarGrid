@@ -27,3 +27,19 @@
 - displayGrid: affiche la solution sous forme d'un tableau avec des fléches pour décrires les directions de sorties et d'entrées ( "↑↓", "←→", "↑→",)
 - print_grid_stars : affiche la grille avec 3 étoiles par cellule 3*3 comme dans l'image donnée dans l'énoncée.
 **NB** : La première version de l'affiche a été faite car la visualisation de la solution  est plus simple pour gérer les erreurs et déboguer, qu'avec plusieurs étoiles.
+
+# RESULTATS
+- Exemple :
+![alt text](image-1.png)
+- Jeu 1:
+![alt text](image-2.png)
+- Jeu 2:
+![alt text](image-3.png)
+- Jeu 3: 
+![alt text](image.png)
+- Jeu 4:
+![alt text](image-4.png)
+- Jeu 5:
+![alt text](image-5.png)
+
+
