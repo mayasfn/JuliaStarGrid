@@ -31,12 +31,12 @@
 # RESULTATS
 | Nom     | Image                                                                                         |
 |---------|-----------------------------------------------------------------------------------------------|
-| Exemple | ![Exemple](image-1.png){ width=50%,height=50% }                                                |
-| Jeu 1   | ![Jeu 1](image-2.png){ width=50%,height=50% }                                                  |
-| Jeu 2   | ![Jeu 2](image-3.png){ width=50%,height=50% }                                                  |
-| Jeu 3   | ![Jeu 3](image.png){ width=50%,height=50% }                                                    |
-| Jeu 4   | ![Jeu 4](image-4.png){ width=50%,height=50% }                                                  |
-| Jeu 5   | ![Jeu 5](image-5.png){ width=50%,height=50% }                                                  |
+| Exemple | ![Exemple](image-1.png)                                              |
+| Jeu 1   | ![Jeu 1](image-2.png)                                                |
+| Jeu 2   | ![Jeu 2](image-3.png)                                                 |
+| Jeu 3   | ![Jeu 3](image.png)                                                  |
+| Jeu 4   | ![Jeu 4](image-4.png)                                                 |
+| Jeu 5   | ![Jeu 5](image-5.png)                                                |
 
 
 
