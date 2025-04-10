@@ -225,32 +225,8 @@ function gridSolver(lignes::Vector{Int}, colonnes::Vector{Int})
     return 0
 end
 
-# --- Fonctions de test sur plusieurs modèles ---
-function testModels()
-    testCases = [
-        # Exemple 1 (5x5)
-        (lignes = [5, 3, 3, 5, 2], colonnes = [5, 5, 2, 2, 4]),
-        # Exemple 2 (4x4)
-        (lignes = [2, 1, 3, 2], colonnes = [3, 2, 2, 1]),
-        # Exemple 3 (6x6)
-        (lignes = [3, 4, 2, 4, 3, 3], colonnes = [4, 3, 3, 3, 3, 3]),
-        # Exemple 4 (1x1)
-        (lignes = [1], colonnes = [1]),
-        # Exemple 5 (2x2)
-        (lignes = [1, 1], colonnes = [1, 1])
-    ]
-    
-    for (idx, testCase) in enumerate(testCases)
-        println("\n--- Modèle $idx ---")
-        println("lignes  = ", testCase.lignes)
-        println("colonnes= ", testCase.colonnes)
-        gridSolver(testCase.lignes, testCase.colonnes)
-    end
-end
-
 function main()
     print("SOLVE-----------------------")
-        # Exemple d'utilisation avec des contraintes sur le nombre de cases noires par ligne et par colonne
     # gridSolver([5,3,3,5,2], [5,5,2,2,4])
     # gridSolver([4,5,3,3,3],[3,4,3,3,5])
     # gridSolver([3,5,2,5,3],[3,2,4,5,4])
