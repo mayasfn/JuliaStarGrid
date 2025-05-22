@@ -1,5 +1,13 @@
 # Grid project
 
+## Présentation
+
+Ce dépôt contient une solution de modélisation mathématique et d'optimisation pour le puzzle « Tour de Ville », inspiré des énigmes présentées dans les magazines « La Recherche » et « Tangente ». Le puzzle consiste à déterminer un chemin unique et continu dans une grille, en respectant des contraintes numériques données sur chaque ligne et colonne.
+
+## Objectif
+
+L'objectif est de former un circuit unique et continu passant exactement une fois par chaque cellule de la grille, avec des indices numériques indiquant le nombre de segments horizontaux et verticaux présents dans chaque ligne et chaque colonne respectivement.
+
 ## Binôme
 * Camelia Mazouz
 * Maya Soufan
